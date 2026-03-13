@@ -31,13 +31,16 @@ class User extends Authenticatable
     public function isOwner(): bool  { return $this->role === 'owner'; }
     public function isPlayer(): bool { return $this->role === 'user'; }
 
-    // Última suscripción (para middleware y checks rápidos)
+    // Suscripción activa actual
     public function subscription()
     {
-        return $this->hasOne(Subscription::class)->latestOfMany();
+        return $this->hasOne(Subscription::class)
+            ->where('status', 'active')
+            ->where('ends_at', '>', now())
+            ->latestOfMany();
     }
 
-    // Historial completo de suscripciones
+    // Historial completo
     public function subscriptions()
     {
         return $this->hasMany(Subscription::class);
@@ -55,16 +58,30 @@ class User extends Authenticatable
 
     public function hasActiveSubscription(): bool
     {
-        return $this->subscription?->status === 'active'
-            && $this->subscription?->ends_at?->isFuture();
+        return $this->subscriptions()
+            ->where('status', 'active')
+            ->where('ends_at', '>', now())
+            ->exists();
+    }
+
+    public function activeSubscription(): ?Subscription
+    {
+        return $this->subscriptions()
+            ->where('status', 'active')
+            ->where('ends_at', '>', now())
+            ->latest()
+            ->first();
     }
 
     public function canAddCourt(): bool
     {
-        if (!$this->hasActiveSubscription()) return false;
-        $limit   = $this->subscription->plan->court_limit ?? 0;
+        $sub = $this->activeSubscription();
+        if (!$sub) return false;
+
+        $limit   = $sub->plan->court_limit ?? 0;
         $current = $this->venues()->withCount('activeCourts')->get()
             ->sum('active_courts_count');
+
         return $current < $limit;
     }
 }

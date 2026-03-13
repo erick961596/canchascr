@@ -24,13 +24,11 @@ class SubscriptionController extends Controller
         $request->validate([
             'plan_id'        => 'required|exists:plans,id',
             'payment_method' => 'required|in:card,manual',
-            // tarjeta
             'card_holder'    => 'required_if:payment_method,card',
             'card_number'    => 'required_if:payment_method,card',
             'card_exp_month' => 'required_if:payment_method,card',
             'card_exp_year'  => 'required_if:payment_method,card',
             'card_cvc'       => 'required_if:payment_method,card',
-            // manual
             'uploaded_proof_path' => 'required_if:payment_method,manual',
         ]);
 
@@ -62,22 +60,20 @@ class SubscriptionController extends Controller
     private function createManualSubscription($request, $plan, $user)
     {
         $proofPath = $request->input('uploaded_proof_path');
-        if (!$proofPath) {
-            return response()->json(['message' => 'El comprobante es obligatorio para SINPE.'], 422);
-        }
 
         DB::transaction(function () use ($plan, $user, $proofPath) {
-            $sub = Subscription::updateOrCreate(
-                ['user_id' => $user->id],
-                [
-                    'plan_id'        => $plan->id,
-                    'status'         => 'pending',
-                    'payment_method' => 'manual',
-                    'price'          => $plan->price,
-                    'starts_at'      => now(),
-                    'ends_at'        => now()->addMonth(),
-                ]
-            );
+            // Cancelar suscripción activa anterior si existe
+            $this->cancelActiveSubscription($user);
+
+            $sub = Subscription::create([
+                'user_id'        => $user->id,
+                'plan_id'        => $plan->id,
+                'status'         => 'pending',
+                'payment_method' => 'manual',
+                'price'          => $plan->price,
+                'starts_at'      => now(),
+                'ends_at'        => now()->addMonth(),
+            ]);
 
             SubscriptionPayment::create([
                 'subscription_id' => $sub->id,
@@ -94,10 +90,10 @@ class SubscriptionController extends Controller
             $user->id
         );
 
-        // Manual puede ser redirect o JSON según si viene de fetch o form normal
         if (request()->expectsJson()) {
             return response()->json(['message' => 'Comprobante recibido. Activaremos tu suscripción en máximo 24 horas.']);
         }
+
         return redirect()->route('owner.subscription.index')
             ->with('success', 'Comprobante recibido. Activaremos tu suscripción en un plazo máximo de 24 horas.');
     }
@@ -108,13 +104,10 @@ class SubscriptionController extends Controller
     private function createCardSubscription($request, $plan, $user)
     {
         try {
-            $secret = config('services.onvopay.secret');
-
-            if (!$secret) {
-                abort(500, 'ONVO secret no configurado');
-            }
-
+            $secret  = config('services.onvopay.secret');
             $priceId = $plan->onvopay_price_id ?? $plan->onvopay_id;
+
+            if (!$secret) abort(500, 'ONVO secret no configurado');
             if (!$priceId) {
                 return response()->json([
                     'message' => 'Este plan no tiene configurado su Price ID en ONVO. Contactá al administrador.'
@@ -130,10 +123,7 @@ class SubscriptionController extends Controller
                     ]);
 
                 if (!$customerResponse->successful()) {
-                    return response()->json([
-                        'message' => 'Error creando customer en ONVO.',
-                        'debug'   => $customerResponse->json(),
-                    ], 422);
+                    return response()->json(['message' => 'Error creando customer en ONVO.'], 422);
                 }
 
                 $user->update(['onvo_customer_id' => $customerResponse->json('id')]);
@@ -155,19 +145,14 @@ class SubscriptionController extends Controller
                 ]);
 
             if (!$pmResponse->successful()) {
-                LogService::error('onvo_pm_failed',
-                    "Error creando payment method para {$user->name}: " . $pmResponse->body(),
-                    [], $user->id
-                );
                 return response()->json([
                     'message' => 'Error creando método de pago. Verificá los datos de la tarjeta.',
-                    'debug'   => $pmResponse->json(),
                 ], 422);
             }
 
             $paymentMethodId = $pmResponse->json('id');
 
-            // 3️⃣ Subscription (allow_incomplete)
+            // 3️⃣ Subscription
             $subResponse = Http::withToken($secret)
                 ->post("{$this->apiBase}/subscriptions", [
                     'customerId'      => $user->onvo_customer_id,
@@ -176,10 +161,7 @@ class SubscriptionController extends Controller
                 ]);
 
             if (!$subResponse->successful()) {
-                return response()->json([
-                    'message' => 'No se pudo crear la suscripción en ONVO.',
-                    'debug'   => $subResponse->json(),
-                ], 422);
+                return response()->json(['message' => 'No se pudo crear la suscripción en ONVO.'], 422);
             }
 
             $onvoSub         = $subResponse->json();
@@ -187,49 +169,45 @@ class SubscriptionController extends Controller
             $paymentIntentId = data_get($onvoSub, 'latestInvoice.paymentIntentId');
 
             if (!$subscriptionId || !$paymentIntentId) {
-                return response()->json([
-                    'message' => 'ONVO no retornó un paymentIntent. Intentá más tarde.',
-                    'debug'   => $onvoSub,
-                ], 422);
+                return response()->json(['message' => 'ONVO no retornó un paymentIntent.'], 422);
             }
 
-            // 4️⃣ Confirmar payment intent (3DS)
+            // 4️⃣ Confirmar payment intent
             $confirmResponse = Http::withToken($secret)
                 ->post("{$this->apiBase}/payment-intents/{$paymentIntentId}/confirm", [
                     'paymentMethodId' => $paymentMethodId,
                 ]);
 
             if (!$confirmResponse->successful()) {
-                return response()->json([
-                    'message' => 'No se pudo confirmar el pago.',
-                    'debug'   => $confirmResponse->json(),
-                ], 422);
+                return response()->json(['message' => 'No se pudo confirmar el pago.'], 422);
             }
 
             $confirmedIntent = $confirmResponse->json();
 
-            // 5️⃣ Guardar localmente como incomplete (webhook lo activa)
-            $sub = Subscription::updateOrCreate(
-                ['user_id' => $user->id],
-                [
-                    'plan_id'                => $plan->id,
-                    'status'                 => 'incomplete',
-                    'payment_method'         => 'card',
-                    'onvo_subscription_id'   => $subscriptionId,
-                    'onvo_payment_intent_id' => $paymentIntentId,   
-                    'onvo_payment_method_id' => $paymentMethodId,
-                    'price'                  => $plan->price,
-                    'starts_at'              => now(),
-                    'ends_at'                => now()->addMonth(),
-                ]
-            );
+            // 5️⃣ Cancelar activa anterior + crear nueva — en una sola transacción
+            DB::transaction(function () use ($user, $plan, $subscriptionId, $paymentIntentId, $paymentMethodId) {
+                $this->cancelActiveSubscription($user);
 
-            SubscriptionPayment::create([
-                'subscription_id' => $sub->id,
-                'amount'          => $plan->price,
-                'method'          => 'card',
-                'status'          => 'pending',
-            ]);
+                $sub = Subscription::create([
+                    'user_id'                => $user->id,
+                    'plan_id'               => $plan->id,
+                    'status'                => 'incomplete',
+                    'payment_method'        => 'card',
+                    'onvo_subscription_id'  => $subscriptionId,
+                    'onvo_payment_intent_id' => $paymentIntentId,
+                    'onvo_payment_method_id' => $paymentMethodId,
+                    'price'                 => $plan->price,
+                    'starts_at'             => now(),
+                    'ends_at'               => now()->addMonth(),
+                ]);
+
+                SubscriptionPayment::create([
+                    'subscription_id' => $sub->id,
+                    'amount'          => $plan->price,
+                    'method'          => 'card',
+                    'status'          => 'pending',
+                ]);
+            });
 
             LogService::subscription('subscription_card_initiated',
                 "Owner {$user->name} inició suscripción tarjeta plan {$plan->name}",
@@ -237,7 +215,6 @@ class SubscriptionController extends Controller
                 $user->id
             );
 
-            // 6️⃣ Respuesta al front — el JS decide si necesita 3DS
             return response()->json([
                 'subscription_id'       => $subscriptionId,
                 'payment_intent_id'     => $paymentIntentId,
@@ -246,16 +223,20 @@ class SubscriptionController extends Controller
             ]);
 
         } catch (\Throwable $e) {
-            Log::error('ONVO subscription error', [
-                'error' => $e->getMessage(),
-                'line'  => $e->getLine(),
-            ]);
-            LogService::error('subscription_exception',
-                "Excepción: {$e->getMessage()}",
-                ['plan_id' => $plan->id ?? null],
-                $user->id ?? null
-            );
+            Log::error('ONVO subscription error', ['error' => $e->getMessage(), 'line' => $e->getLine()]);
+            LogService::error('subscription_exception', "Excepción: {$e->getMessage()}", [], $user->id ?? null);
             return response()->json(['message' => 'Error interno procesando la suscripción.'], 500);
         }
+    }
+
+    // -----------------------------------------------------------------------
+    // Cancela la suscripción activa o pending del usuario
+    // Se llama dentro de una transacción antes de crear la nueva
+    // -----------------------------------------------------------------------
+    private function cancelActiveSubscription($user): void
+    {
+        Subscription::where('user_id', $user->id)
+            ->whereIn('status', ['active', 'pending', 'incomplete', 'past_due'])
+            ->update(['status' => 'canceled']);
     }
 }
