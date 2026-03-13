@@ -3,10 +3,7 @@
 namespace App\Http\Controllers\Owner;
 
 use App\Http\Controllers\Controller;
-use App\Models\Court;
-use App\Models\Venue;
-use App\Models\Schedule;
-use App\Models\Blockout;
+use App\Models\{Court, Venue, Schedule, Blockout};
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -14,7 +11,7 @@ class CourtController extends Controller
 {
     public function index()
     {
-        $venues = auth()->user()->venues()->with(['courts.schedules'])->get();
+        $venues = auth()->user()->venues()->with(['courts.schedules', 'courts.blockouts'])->get();
         return view('pages.owner.courts.index', compact('venues'));
     }
 
@@ -39,7 +36,8 @@ class CourtController extends Controller
         $images = [];
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $img) {
-                $images[] = $img->store('courts/images/' . $venue->id, 's3');
+                $path = $img->store('courts/images/' . $venue->id, 's3');
+                if ($path) $images[] = $path;
             }
         }
 
@@ -76,6 +74,18 @@ class CourtController extends Controller
         return response()->json(['message' => 'Cancha desactivada.']);
     }
 
+    // -----------------------------------------------------------------------
+    // Horarios — GET (para cargar en modal)
+    // -----------------------------------------------------------------------
+    public function getSchedules(Court $court)
+    {
+        $this->authorizeOwner($court);
+        return response()->json($court->schedules);
+    }
+
+    // -----------------------------------------------------------------------
+    // Horarios — POST (guardar / actualizar)
+    // -----------------------------------------------------------------------
     public function saveSchedules(Request $request, Court $court)
     {
         $this->authorizeOwner($court);
@@ -89,13 +99,12 @@ class CourtController extends Controller
         ]);
 
         foreach ($data['schedules'] as $s) {
-            // Normalizar a H:i (quitar segundos si vienen)
             $open  = substr($s['open_time'],  0, 5);
             $close = substr($s['close_time'], 0, 5);
 
             if ($close <= $open) {
                 return response()->json([
-                    'message' => "El horario de cierre debe ser posterior al de apertura ({$s['day_of_week']})."
+                    'message' => "El cierre debe ser posterior a la apertura ({$s['day_of_week']})."
                 ], 422);
             }
 
@@ -108,16 +117,30 @@ class CourtController extends Controller
         return response()->json(['message' => 'Horarios guardados.']);
     }
 
+    // -----------------------------------------------------------------------
+    // Bloqueos — GET
+    // -----------------------------------------------------------------------
+    public function getBlockouts(Court $court)
+    {
+        $this->authorizeOwner($court);
+        return response()->json(
+            $court->blockouts()->orderBy('block_date')->get()
+        );
+    }
+
+    // -----------------------------------------------------------------------
+    // Bloqueos — POST
+    // -----------------------------------------------------------------------
     public function addBlockout(Request $request, Court $court)
     {
         $this->authorizeOwner($court);
 
         $data = $request->validate([
-            'block_date'  => 'required|date',
-            'full_day'    => 'boolean',
-            'start_time'  => 'required_if:full_day,false|nullable|date_format:H:i',
-            'end_time'    => 'required_if:full_day,false|nullable|date_format:H:i',
-            'reason'      => 'nullable|string|max:200',
+            'block_date' => 'required|date|after_or_equal:today',
+            'full_day'   => 'boolean',
+            'start_time' => 'required_if:full_day,false|nullable|date_format:H:i',
+            'end_time'   => 'required_if:full_day,false|nullable|date_format:H:i',
+            'reason'     => 'nullable|string|max:200',
         ]);
 
         $blockout = Blockout::create(array_merge($data, ['court_id' => $court->id]));
@@ -125,6 +148,9 @@ class CourtController extends Controller
         return response()->json(['message' => 'Bloqueo agregado.', 'blockout' => $blockout]);
     }
 
+    // -----------------------------------------------------------------------
+    // Bloqueos — DELETE
+    // -----------------------------------------------------------------------
     public function removeBlockout(Blockout $blockout)
     {
         $this->authorizeOwner($blockout->court);
@@ -134,8 +160,6 @@ class CourtController extends Controller
 
     private function authorizeOwner(Court $court): void
     {
-        if ($court->venue->owner_id !== auth()->id()) {
-            abort(403);
-        }
+        if ($court->venue->owner_id !== auth()->id()) abort(403);
     }
 }

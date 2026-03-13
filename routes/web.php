@@ -5,7 +5,6 @@ use App\Http\Controllers\Auth\{LoginController, RegisterController, GoogleContro
 use App\Http\Controllers\Player\{HomeController, ReservationController as PlayerReservationController, RatingController};
 use App\Http\Controllers\Owner\{DashboardController as OwnerDashboard, VenueController, CourtController, ReservationController as OwnerReservationController, SubscriptionController as OwnerSubscriptionController};
 use App\Http\Controllers\Admin\{DashboardController as AdminDashboard, UserController, SubscriptionController as AdminSubscriptionController, PlanController, VenueController as AdminVenueController, LogController};
-use App\Http\Controllers\Webhooks\OnvoWebhookController;
 
 /*
 |--------------------------------------------------------------------------
@@ -76,9 +75,11 @@ Route::prefix('owner')->name('owner.')->middleware(['auth', 'role:owner'])->grou
             Route::post('/',                             [CourtController::class, 'store'])->name('store');
             Route::put('/{court}',                       [CourtController::class, 'update'])->name('update');
             Route::delete('/{court}',                    [CourtController::class, 'destroy'])->name('destroy');
-            Route::post('/{court}/horarios',             [CourtController::class, 'saveSchedules'])->name('schedules');
+            Route::post('/{court}/horarios',    [CourtController::class, 'saveSchedules'])->name('schedules');
+            Route::get('/{court}/horarios',     [CourtController::class, 'getSchedules'])->name('schedules.get');
+            Route::get('/{court}/bloqueos',     [CourtController::class, 'getBlockouts'])->name('blockouts.get');
+            Route::delete('/bloqueos/{blockout}', [CourtController::class, 'removeBlockout'])->name('blockouts.remove');
             Route::post('/{court}/bloqueos',             [CourtController::class, 'addBlockout'])->name('blockout.store');
-            Route::delete('/bloqueos/{blockout}',        [CourtController::class, 'removeBlockout'])->name('blockout.destroy');
         });
 
         Route::prefix('reservas')->name('reservations.')->group(function () {
@@ -125,8 +126,6 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
     Route::get('/logs/{log}',        [LogController::class, 'show'])->name('logs.show');
     Route::delete('/logs/clear',     [LogController::class, 'clear'])->name('logs.clear');
 });
-
-
 
 Route::get('/', fn() => redirect()->route('player.home'))->middleware('auth');
 Route::get('/', fn() => view('pages.auth.login'))->middleware('guest');

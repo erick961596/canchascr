@@ -32,7 +32,21 @@
                         <i class="fa-solid fa-futbol" style="font-size:28px;color:#ccc"></i>
                     </div>
                 @endif
-                <div class="fw-700" style="font-size:14px">{{ $court->name }}</div>
+                <div class="d-flex align-items-start justify-content-between">
+                    <div class="fw-700" style="font-size:14px">{{ $court->name }}</div>
+                    {{-- Botón editar info de la cancha --}}
+                    <button class="btn btn-sm p-1" style="line-height:1" title="Editar cancha"
+                        onclick="openEditCourt(
+                            '{{ $court->id }}',
+                            '{{ addslashes($court->name) }}',
+                            '{{ $court->sport }}',
+                            '{{ $court->price_per_hour }}',
+                            '{{ $court->slot_duration }}',
+                            '{{ implode(',', $court->features ?? []) }}'
+                        )">
+                        <i class="fa-solid fa-pen-to-square" style="color:#aaa;font-size:13px"></i>
+                    </button>
+                </div>
                 <div class="d-flex align-items-center justify-content-between mt-1">
                     <span class="badge" style="background:#111;color:#fff;border-radius:20px;font-size:10px">{{ \App\Models\Court::sportLabel($court->sport) }}</span>
                     <span class="fw-700" style="font-size:13px">₡{{ number_format($court->price_per_hour, 0, ',', '.') }}/hr</span>
@@ -44,11 +58,11 @@
                 </div>
                 <div class="d-flex gap-2 mt-3">
                     <button class="btn btn-sm flex-grow-1" style="border-radius:10px;border:1.5px solid #e0e0e0;font-size:11px;font-weight:600"
-                            onclick="openSchedules('{{ $court->id }}')">
+                            onclick="openSchedules('{{ $court->id }}', '{{ addslashes($court->name) }}')">
                         <i class="fa-solid fa-clock me-1"></i>Horarios
                     </button>
                     <button class="btn btn-sm flex-grow-1" style="border-radius:10px;border:1.5px solid #e0e0e0;font-size:11px;font-weight:600"
-                            onclick="openBlockouts('{{ $court->id }}')">
+                            onclick="openBlockouts('{{ $court->id }}', '{{ addslashes($court->name) }}')">
                         <i class="fa-solid fa-ban me-1"></i>Bloqueos
                     </button>
                 </div>
@@ -67,7 +81,7 @@
 </div>
 @endforelse
 
-{{-- Modal nueva cancha --}}
+{{-- ===================== MODAL: NUEVA CANCHA ===================== --}}
 <div class="modal fade" id="courtModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content" style="border-radius:24px;border:none">
@@ -87,7 +101,7 @@
                         </select>
                     </div>
                     <div class="col-md-7">
-                        <label class="form-label fw-600" style="font-size:13px">Nombre de la cancha *</label>
+                        <label class="form-label fw-600" style="font-size:13px">Nombre *</label>
                         <input type="text" id="c_name" class="form-control" style="border-radius:12px" placeholder="Ej: Cancha A">
                     </div>
                     <div class="col-md-5">
@@ -118,7 +132,6 @@
                     <div class="col-12">
                         <label class="form-label fw-600" style="font-size:13px">Características (separado por coma)</label>
                         <input type="text" id="c_features" class="form-control" style="border-radius:12px" placeholder="Iluminación, Vestuarios, Parqueo">
-                        <small class="text-muted">Se usarán como filtros en el marketplace</small>
                     </div>
                     <div class="col-12">
                         <label class="form-label fw-600" style="font-size:13px">Fotos de la cancha</label>
@@ -134,26 +147,93 @@
     </div>
 </div>
 
-{{-- Modal horarios --}}
+{{-- ===================== MODAL: EDITAR CANCHA ===================== --}}
+<div class="modal fade" id="editCourtModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius:24px;border:none">
+            <div class="modal-header border-0 pb-0 px-4 pt-4">
+                <h5 class="fw-800">Editar cancha</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body px-4">
+                <input type="hidden" id="e_court_id">
+                <div class="row g-3">
+                    <div class="col-md-7">
+                        <label class="form-label fw-600" style="font-size:13px">Nombre *</label>
+                        <input type="text" id="e_name" class="form-control" style="border-radius:12px">
+                    </div>
+                    <div class="col-md-5">
+                        <label class="form-label fw-600" style="font-size:13px">Deporte *</label>
+                        <select id="e_sport" class="form-select" style="border-radius:12px">
+                            <option value="futbol">⚽ Fútbol</option>
+                            <option value="basquetbol">🏀 Baloncesto</option>
+                            <option value="tenis">🎾 Tenis</option>
+                            <option value="padel">🏸 Pádel</option>
+                            <option value="volleyball">🏐 Volleyball</option>
+                            <option value="beisbol">⚾ Béisbol</option>
+                            <option value="otro">Otro</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-600" style="font-size:13px">Precio por hora (₡) *</label>
+                        <input type="number" id="e_price" class="form-control" style="border-radius:12px">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-600" style="font-size:13px">Duración del slot</label>
+                        <select id="e_slot" class="form-select" style="border-radius:12px">
+                            <option value="60">60 min (1 hora)</option>
+                            <option value="30">30 min</option>
+                            <option value="90">90 min</option>
+                            <option value="120">120 min</option>
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-600" style="font-size:13px">Características (separado por coma)</label>
+                        <input type="text" id="e_features" class="form-control" style="border-radius:12px" placeholder="Iluminación, Vestuarios, Parqueo">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0 px-4 pb-4">
+                <button class="btn" style="border-radius:12px;border:1.5px solid #e0e0e0" data-bs-dismiss="modal">Cancelar</button>
+                <button id="btnUpdateCourt" class="btn btn-dark" style="border-radius:12px;font-weight:700" onclick="updateCourt()">Guardar cambios</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- ===================== MODAL: HORARIOS ===================== --}}
 <div class="modal fade" id="schedulesModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content" style="border-radius:24px;border:none">
             <div class="modal-header border-0 pb-0 px-4 pt-4">
-                <h5 class="fw-800">Horarios de apertura</h5>
+                <div>
+                    <h5 class="fw-800 mb-0">Horarios de apertura</h5>
+                    <div id="sch_court_name" class="text-muted" style="font-size:12px"></div>
+                </div>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body px-4" id="schedulesBody">
                 <input type="hidden" id="sch_court_id">
-                @php $days = ['mon'=>'Lunes','tue'=>'Martes','wed'=>'Miércoles','thu'=>'Jueves','fri'=>'Viernes','sat'=>'Sábado','sun'=>'Domingo']; @endphp
-                @foreach($days as $key => $label)
-                <div class="d-flex align-items-center gap-3 py-2" style="border-bottom:1px solid #f5f5f5">
-                    <div style="width:80px;font-size:13px;font-weight:600">{{ $label }}</div>
-                    <input type="checkbox" class="form-check-input day-check" id="day_{{ $key }}" value="{{ $key }}" onchange="toggleDay('{{ $key }}')">
-                    <input type="time" id="open_{{ $key }}" class="form-control form-control-sm d-none" style="border-radius:8px;max-width:100px" value="06:00">
-                    <span class="d-none" id="dash_{{ $key }}">a</span>
-                    <input type="time" id="close_{{ $key }}" class="form-control form-control-sm d-none" style="border-radius:8px;max-width:100px" value="22:00">
+
+                {{-- Spinner mientras carga --}}
+                <div id="sch_loading" class="text-center py-4">
+                    <div class="spinner-border spinner-border-sm text-secondary" role="status"></div>
+                    <div class="text-muted mt-2" style="font-size:12px">Cargando horarios...</div>
                 </div>
-                @endforeach
+
+                {{-- Filas de días --}}
+                <div id="sch_rows" class="d-none">
+                    @php $days = ['mon'=>'Lunes','tue'=>'Martes','wed'=>'Miércoles','thu'=>'Jueves','fri'=>'Viernes','sat'=>'Sábado','sun'=>'Domingo']; @endphp
+                    @foreach($days as $key => $label)
+                    <div class="d-flex align-items-center gap-3 py-2" style="border-bottom:1px solid #f5f5f5">
+                        <div style="width:90px;font-size:13px;font-weight:600">{{ $label }}</div>
+                        <input type="checkbox" class="form-check-input" id="day_{{ $key }}" value="{{ $key }}" onchange="toggleDay('{{ $key }}')">
+                        <input type="time" id="open_{{ $key }}" class="form-control form-control-sm day-time d-none" style="border-radius:8px;max-width:95px" value="06:00">
+                        <span class="d-none day-sep" id="dash_{{ $key }}" style="font-size:12px;color:#aaa">→</span>
+                        <input type="time" id="close_{{ $key }}" class="form-control form-control-sm day-time d-none" style="border-radius:8px;max-width:95px" value="22:00">
+                    </div>
+                    @endforeach
+                </div>
             </div>
             <div class="modal-footer border-0 px-4 pb-4">
                 <button class="btn" style="border-radius:12px;border:1.5px solid #e0e0e0" data-bs-dismiss="modal">Cancelar</button>
@@ -163,22 +243,39 @@
     </div>
 </div>
 
-{{-- Modal bloqueos --}}
+{{-- ===================== MODAL: BLOQUEOS ===================== --}}
 <div class="modal fade" id="blockoutModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content" style="border-radius:24px;border:none">
             <div class="modal-header border-0 pb-0 px-4 pt-4">
-                <h5 class="fw-800">Agregar bloqueo</h5>
+                <div>
+                    <h5 class="fw-800 mb-0">Bloqueos de cancha</h5>
+                    <div id="blk_court_name" class="text-muted" style="font-size:12px"></div>
+                </div>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body px-4">
                 <input type="hidden" id="blk_court_id">
+
+                {{-- Lista de bloqueos existentes --}}
+                <div class="mb-4">
+                    <div class="fw-700 mb-2" style="font-size:13px">Bloqueos activos</div>
+                    <div id="blk_loading" class="text-center py-3">
+                        <div class="spinner-border spinner-border-sm text-secondary" role="status"></div>
+                    </div>
+                    <div id="blk_list"></div>
+                </div>
+
+                <hr style="border-color:#f0f0f0">
+
+                {{-- Formulario nuevo bloqueo --}}
+                <div class="fw-700 mb-3" style="font-size:13px">Agregar nuevo bloqueo</div>
                 <div class="row g-3">
-                    <div class="col-12">
-                        <label class="form-label fw-600" style="font-size:13px">Fecha</label>
+                    <div class="col-md-4">
+                        <label class="form-label fw-600" style="font-size:12px">Fecha</label>
                         <input type="date" id="blk_date" class="form-control" style="border-radius:12px">
                     </div>
-                    <div class="col-12">
+                    <div class="col-md-8 d-flex align-items-end pb-1">
                         <label class="d-flex align-items-center gap-2" style="font-size:13px;cursor:pointer">
                             <input type="checkbox" id="blk_fullday" onchange="toggleFullDay()"> Día completo
                         </label>
@@ -196,14 +293,16 @@
                         </div>
                     </div>
                     <div class="col-12">
-                        <label class="form-label fw-600" style="font-size:13px">Motivo (opcional)</label>
+                        <label class="form-label fw-600" style="font-size:12px">Motivo (opcional)</label>
                         <input type="text" id="blk_reason" class="form-control" style="border-radius:12px" placeholder="Mantenimiento, evento privado...">
                     </div>
                 </div>
             </div>
             <div class="modal-footer border-0 px-4 pb-4">
-                <button class="btn" style="border-radius:12px;border:1.5px solid #e0e0e0" data-bs-dismiss="modal">Cancelar</button>
-                <button class="btn btn-dark" style="border-radius:12px;font-weight:700" onclick="saveBlockout()">Agregar bloqueo</button>
+                <button class="btn" style="border-radius:12px;border:1.5px solid #e0e0e0" data-bs-dismiss="modal">Cerrar</button>
+                <button class="btn btn-dark" style="border-radius:12px;font-weight:700" onclick="saveBlockout()">
+                    <i class="fa-solid fa-plus me-1"></i>Agregar bloqueo
+                </button>
             </div>
         </div>
     </div>
@@ -213,9 +312,11 @@
 @push('scripts')
 <script>
 const courtModal     = new bootstrap.Modal(document.getElementById('courtModal'));
+const editCourtModal = new bootstrap.Modal(document.getElementById('editCourtModal'));
 const schedulesModal = new bootstrap.Modal(document.getElementById('schedulesModal'));
 const blockoutModal  = new bootstrap.Modal(document.getElementById('blockoutModal'));
 
+// ─── NUEVA CANCHA ───────────────────────────────────────────────
 function openCourtModal(venueId = null) {
     if (venueId) document.getElementById('c_venue_select').value = venueId;
     courtModal.show();
@@ -230,8 +331,9 @@ async function saveCourt() {
     formData.append('price_per_hour', document.getElementById('c_price').value);
     formData.append('slot_duration',  document.getElementById('c_slot').value);
 
-    const features = document.getElementById('c_features').value.split(',').map(s => s.trim()).filter(Boolean);
-    features.forEach(f => formData.append('features[]', f));
+    document.getElementById('c_features').value.split(',')
+        .map(s => s.trim()).filter(Boolean)
+        .forEach(f => formData.append('features[]', f));
 
     const imgs = document.getElementById('c_images').files;
     for (let i = 0; i < imgs.length; i++) formData.append('images[]', imgs[i]);
@@ -250,9 +352,78 @@ async function saveCourt() {
     }
 }
 
-function openSchedules(courtId) {
-    document.getElementById('sch_court_id').value = courtId;
+// ─── EDITAR CANCHA ───────────────────────────────────────────────
+function openEditCourt(id, name, sport, price, slot, features) {
+    document.getElementById('e_court_id').value  = id;
+    document.getElementById('e_name').value      = name;
+    document.getElementById('e_sport').value     = sport;
+    document.getElementById('e_price').value     = price;
+    document.getElementById('e_slot').value      = slot;
+    document.getElementById('e_features').value  = features;
+    editCourtModal.show();
+}
+
+async function updateCourt() {
+    const btn = document.getElementById('btnUpdateCourt');
+    const id  = document.getElementById('e_court_id').value;
+
+    const features = document.getElementById('e_features').value
+        .split(',').map(s => s.trim()).filter(Boolean);
+
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i>Guardando...';
+
+    try {
+        await axios.put(`/owner/canchas/${id}`, {
+            name:           document.getElementById('e_name').value.trim(),
+            sport:          document.getElementById('e_sport').value,
+            price_per_hour: document.getElementById('e_price').value,
+            slot_duration:  document.getElementById('e_slot').value,
+            features,
+        });
+        Toast.fire({ icon: 'success', title: 'Cancha actualizada.' });
+        setTimeout(() => location.reload(), 1200);
+    } catch(e) {
+        Toast.fire({ icon: 'error', title: e.response?.data?.message || 'Error.' });
+        btn.disabled = false;
+        btn.innerHTML = 'Guardar cambios';
+    }
+}
+
+// ─── HORARIOS ───────────────────────────────────────────────────
+const DAYS = ['mon','tue','wed','thu','fri','sat','sun'];
+
+async function openSchedules(courtId, courtName) {
+    document.getElementById('sch_court_id').value    = courtId;
+    document.getElementById('sch_court_name').textContent = courtName;
+
+    // Reset todos los días
+    DAYS.forEach(d => {
+        document.getElementById('day_' + d).checked = false;
+        toggleDay(d); // esconde los inputs
+    });
+
+    document.getElementById('sch_loading').classList.remove('d-none');
+    document.getElementById('sch_rows').classList.add('d-none');
     schedulesModal.show();
+
+    try {
+        const { data } = await axios.get(`/owner/canchas/${courtId}/horarios`);
+        // Pre-llenar con los horarios existentes
+        data.forEach(s => {
+            const chk = document.getElementById('day_' + s.day_of_week);
+            if (!chk) return;
+            chk.checked = true;
+            toggleDay(s.day_of_week);
+            document.getElementById('open_'  + s.day_of_week).value = s.open_time.substring(0,5);
+            document.getElementById('close_' + s.day_of_week).value = s.close_time.substring(0,5);
+        });
+    } catch(e) {
+        Toast.fire({ icon: 'warning', title: 'No se pudieron cargar los horarios.' });
+    } finally {
+        document.getElementById('sch_loading').classList.add('d-none');
+        document.getElementById('sch_rows').classList.remove('d-none');
+    }
 }
 
 function toggleDay(day) {
@@ -265,14 +436,13 @@ function toggleDay(day) {
 
 async function saveSchedules() {
     const courtId = document.getElementById('sch_court_id').value;
-    const days = ['mon','tue','wed','thu','fri','sat','sun'];
     const schedules = [];
 
-    days.forEach(d => {
+    DAYS.forEach(d => {
         if (document.getElementById('day_' + d).checked) {
             schedules.push({
                 day_of_week: d,
-                open_time:   document.getElementById('open_' + d).value,
+                open_time:   document.getElementById('open_'  + d).value,
                 close_time:  document.getElementById('close_' + d).value,
                 active: true,
             });
@@ -289,13 +459,82 @@ async function saveSchedules() {
         Toast.fire({ icon: 'success', title: 'Horarios guardados.' });
         schedulesModal.hide();
     } catch(e) {
-        Toast.fire({ icon: 'error', title: e.response?.data?.message || e.response?.data?.errors ? Object.values(e.response.data.errors)[0][0] : 'Error guardando horarios.' });
+        const msg = e.response?.data?.message
+            || (e.response?.data?.errors ? Object.values(e.response.data.errors)[0][0] : 'Error guardando horarios.');
+        Toast.fire({ icon: 'error', title: msg });
     }
 }
 
-function openBlockouts(courtId) {
-    document.getElementById('blk_court_id').value = courtId;
+// ─── BLOQUEOS ───────────────────────────────────────────────────
+async function openBlockouts(courtId, courtName) {
+    document.getElementById('blk_court_id').value        = courtId;
+    document.getElementById('blk_court_name').textContent = courtName;
+
+    // Limpiar formulario
+    document.getElementById('blk_date').value   = '';
+    document.getElementById('blk_reason').value = '';
+    document.getElementById('blk_start').value  = '';
+    document.getElementById('blk_end').value    = '';
+    document.getElementById('blk_fullday').checked = false;
+    document.getElementById('blk_time_fields').classList.remove('d-none');
+
     blockoutModal.show();
+    await loadBlockouts(courtId);
+}
+
+async function loadBlockouts(courtId) {
+    const list = document.getElementById('blk_list');
+    document.getElementById('blk_loading').classList.remove('d-none');
+    list.innerHTML = '';
+
+    try {
+        const { data } = await axios.get(`/owner/canchas/${courtId}/bloqueos`);
+
+        if (!data.length) {
+            list.innerHTML = '<div class="text-muted text-center py-2" style="font-size:13px">Sin bloqueos activos.</div>';
+        } else {
+            list.innerHTML = data.map(b => `
+                <div class="d-flex align-items-center justify-content-between py-2 px-3 rounded-3 mb-1"
+                     style="background:#f8f8f8;font-size:13px">
+                    <div>
+                        <span class="fw-700">${b.block_date}</span>
+                        <span class="text-muted ms-2">
+                            ${b.full_day ? '🔴 Día completo' : `${b.start_time?.substring(0,5)} – ${b.end_time?.substring(0,5)}`}
+                        </span>
+                        ${b.reason ? `<span class="ms-2 text-muted" style="font-size:11px">· ${b.reason}</span>` : ''}
+                    </div>
+                    <button class="btn btn-sm" style="color:#e53935;font-size:12px;border:none;background:none;padding:2px 6px"
+                            onclick="deleteBlockout('${b.id}', '${courtId}')">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+    } catch(e) {
+        list.innerHTML = '<div class="text-muted" style="font-size:13px">Error al cargar bloqueos.</div>';
+    } finally {
+        document.getElementById('blk_loading').classList.add('d-none');
+    }
+}
+
+async function deleteBlockout(blockoutId, courtId) {
+    const ok = await Swal.fire({
+        title: '¿Eliminar bloqueo?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#111',
+    });
+    if (!ok.isConfirmed) return;
+
+    try {
+        await axios.delete(`/owner/canchas/bloqueos/${blockoutId}`);
+        Toast.fire({ icon: 'success', title: 'Bloqueo eliminado.' });
+        await loadBlockouts(courtId);
+    } catch(e) {
+        Toast.fire({ icon: 'error', title: 'No se pudo eliminar.' });
+    }
 }
 
 function toggleFullDay() {
@@ -311,6 +550,10 @@ async function saveBlockout() {
         full_day:   fullDay,
         reason:     document.getElementById('blk_reason').value,
     };
+    if (!payload.block_date) {
+        Toast.fire({ icon: 'warning', title: 'Seleccioná una fecha.' });
+        return;
+    }
     if (!fullDay) {
         payload.start_time = document.getElementById('blk_start').value;
         payload.end_time   = document.getElementById('blk_end').value;
@@ -319,9 +562,16 @@ async function saveBlockout() {
     try {
         await axios.post(`/owner/canchas/${courtId}/bloqueos`, payload);
         Toast.fire({ icon: 'success', title: 'Bloqueo agregado.' });
-        blockoutModal.hide();
+        // Limpiar form y recargar lista
+        document.getElementById('blk_date').value   = '';
+        document.getElementById('blk_reason').value = '';
+        document.getElementById('blk_start').value  = '';
+        document.getElementById('blk_end').value    = '';
+        await loadBlockouts(courtId);
     } catch(e) {
-        Toast.fire({ icon: 'error', title: 'Error.' });
+        const msg = e.response?.data?.message
+            || (e.response?.data?.errors ? Object.values(e.response.data.errors)[0][0] : 'Error.');
+        Toast.fire({ icon: 'error', title: msg });
     }
 }
 </script>
