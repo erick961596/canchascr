@@ -128,7 +128,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
 
 /*
 |--------------------------------------------------------------------------
-| WEBHOOKS
+| WEBHOOKS ONVOPAY
 |--------------------------------------------------------------------------
 */
 Route::post('/webhooks/onvo', [OnvoWebhookController::class, 'handle'])
