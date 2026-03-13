@@ -24,8 +24,9 @@
         @forelse($venue->courts as $court)
         <div class="col-lg-4 col-md-6">
             <div class="p-3 rounded-3" style="border:1.5px solid #f0f0f0">
-                @if($court->images && count($court->images))
-                    <img src="{{ \Storage::disk('s3')->url($court->images[0]) }}" class="w-100 rounded-3 mb-2" style="height:120px;object-fit:cover">
+                @php $courtImages = collect($court->images ?? [])->filter()->values(); @endphp
+                @if($courtImages->count())
+                    <img src="{{ \Storage::disk('s3')->url($courtImages[0]) }}" class="w-100 rounded-3 mb-2" style="height:120px;object-fit:cover">
                 @else
                     <div class="w-100 rounded-3 mb-2 d-flex align-items-center justify-content-center" style="height:80px;background:#f5f5f5">
                         <i class="fa-solid fa-futbol" style="font-size:28px;color:#ccc"></i>

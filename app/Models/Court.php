@@ -47,7 +47,12 @@ class Court extends Model
     public function getImagesUrlsAttribute(): array
     {
         if (!$this->images) return [];
-        return array_map(fn($p) => \Storage::disk('s3')->url($p), $this->images);
+        return array_values(
+            array_map(
+                fn($p) => \Storage::disk('s3')->url($p),
+                array_filter($this->images, fn($p) => !empty($p))
+            )
+        );
     }
 
     public function scopeActive($q) { return $q->where('active', true); }
