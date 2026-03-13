@@ -216,7 +216,7 @@ class SubscriptionController extends Controller
                     'status'                 => 'incomplete',
                     'payment_method'         => 'card',
                     'onvo_subscription_id'   => $subscriptionId,
-                    'onvo_payment_intent_id' => $paymentIntentId,
+                    'onvo_payment_intent_id' => $paymentIntentId,   
                     'onvo_payment_method_id' => $paymentMethodId,
                     'price'                  => $plan->price,
                     'starts_at'              => now(),
