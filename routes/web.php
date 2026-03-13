@@ -126,14 +126,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
     Route::delete('/logs/clear',     [LogController::class, 'clear'])->name('logs.clear');
 });
 
-/*
-|--------------------------------------------------------------------------
-| WEBHOOKS ONVOPAY
-|--------------------------------------------------------------------------
-*/
-Route::post('/webhooks/onvo', [OnvoWebhookController::class, 'handle'])
-    ->name('webhooks.onvo')
-    ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class]);
+
 
 Route::get('/', fn() => redirect()->route('player.home'))->middleware('auth');
 Route::get('/', fn() => view('pages.auth.login'))->middleware('guest');
