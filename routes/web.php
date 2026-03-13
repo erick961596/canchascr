@@ -3,8 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\{LoginController, RegisterController, GoogleController};
 use App\Http\Controllers\Player\{HomeController, ReservationController as PlayerReservationController, RatingController};
-use App\Http\Controllers\Owner\{DashboardController as OwnerDashboard, VenueController, CourtController, ReservationController as OwnerReservationController, SubscriptionController as OwnerSubscriptionController};
-use App\Http\Controllers\Admin\{DashboardController as AdminDashboard, UserController, SubscriptionController as AdminSubscriptionController, PlanController, VenueController as AdminVenueController, LogController};
+use App\Http\Controllers\Owner\{DashboardController as OwnerDashboard, VenueController, CourtController, ReservationController as OwnerReservationController, SubscriptionController as OwnerSubscriptionController, ExtraServiceController, PromotionController};
+use App\Http\Controllers\Admin\{DashboardController as AdminDashboard, UserController, SubscriptionController as AdminSubscriptionController, PlanController, VenueController as AdminVenueController, LogController, ExtraServiceController as AdminExtraServiceController, PromotionController as AdminPromotionController};
 
 /*
 |--------------------------------------------------------------------------
@@ -80,6 +80,22 @@ Route::prefix('owner')->name('owner.')->middleware(['auth', 'role:owner'])->grou
             Route::get('/{court}/bloqueos',     [CourtController::class, 'getBlockouts'])->name('blockouts.get');
             Route::delete('/bloqueos/{blockout}', [CourtController::class, 'removeBlockout'])->name('blockouts.remove');
             Route::post('/{court}/bloqueos',             [CourtController::class, 'addBlockout'])->name('blockout.store');
+            Route::post('/{court}/imagenes',             [CourtController::class, 'addImages'])->name('images.add');
+            Route::delete('/{court}/imagenes',           [CourtController::class, 'removeImage'])->name('images.remove');
+        });
+
+        Route::prefix('servicios')->name('services.')->group(function () {
+            Route::get('/',                        [ExtraServiceController::class, 'index'])->name('index');
+            Route::post('/',                       [ExtraServiceController::class, 'store'])->name('store');
+            Route::put('/{extraService}',          [ExtraServiceController::class, 'update'])->name('update');
+            Route::delete('/{extraService}',       [ExtraServiceController::class, 'destroy'])->name('destroy');
+        });
+
+        Route::prefix('promociones')->name('promotions.')->group(function () {
+            Route::get('/',                        [PromotionController::class, 'index'])->name('index');
+            Route::post('/',                       [PromotionController::class, 'store'])->name('store');
+            Route::put('/{promotion}',             [PromotionController::class, 'update'])->name('update');
+            Route::delete('/{promotion}',          [PromotionController::class, 'destroy'])->name('destroy');
         });
 
         Route::prefix('reservas')->name('reservations.')->group(function () {
@@ -87,6 +103,9 @@ Route::prefix('owner')->name('owner.')->middleware(['auth', 'role:owner'])->grou
             Route::patch('/{reservation}/confirmar',      [OwnerReservationController::class, 'confirm'])->name('confirm');
             Route::patch('/{reservation}/rechazar',       [OwnerReservationController::class, 'reject'])->name('reject');
             Route::get('/calendario-data',                [OwnerReservationController::class, 'calendarData'])->name('calendar.data');
+            Route::post('/manual',                        [OwnerReservationController::class, 'storeManual'])->name('manual.store');
+            Route::get('/{reservation}',                  [OwnerReservationController::class, 'show'])->name('show');
+            Route::patch('/{reservation}',                [OwnerReservationController::class, 'update'])->name('update');
         });
     });
 });
@@ -120,6 +139,10 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
     Route::get('/venues',                    [AdminVenueController::class, 'index'])->name('venues.index');
     Route::get('/venues/{venue}',            [AdminVenueController::class, 'show'])->name('venues.show');
     Route::patch('/venues/{venue}/toggle',   [AdminVenueController::class, 'toggle'])->name('venues.toggle');
+
+    // Extra services & promotions (admin read)
+    Route::get('/servicios',         [AdminExtraServiceController::class, 'index'])->name('services.index');
+    Route::get('/promociones',       [AdminPromotionController::class, 'index'])->name('promotions.index');
 
     // Logs
     Route::get('/logs',              [LogController::class, 'index'])->name('logs.index');

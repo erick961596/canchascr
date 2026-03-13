@@ -42,7 +42,9 @@
                             '{{ $court->sport }}',
                             '{{ $court->price_per_hour }}',
                             '{{ $court->slot_duration }}',
-                            '{{ implode(',', $court->features ?? []) }}'
+                            '{{ implode(',', $court->features ?? []) }}',
+                            '{{ implode('||', $court->image_paths) }}',
+                            '{{ implode('||', $court->images_urls) }}'
                         )">
                         <i class="fa-solid fa-pen-to-square" style="color:#aaa;font-size:13px"></i>
                     </button>
@@ -190,6 +192,12 @@
                     <div class="col-12">
                         <label class="form-label fw-600" style="font-size:13px">Características (separado por coma)</label>
                         <input type="text" id="e_features" class="form-control" style="border-radius:12px" placeholder="Iluminación, Vestuarios, Parqueo">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-600" style="font-size:13px">Fotos actuales</label>
+                        <div id="e_images_list" class="d-flex flex-wrap gap-2 mb-2"></div>
+                        <label class="form-label fw-600" style="font-size:13px">Agregar fotos</label>
+                        <input type="file" id="e_images_new" class="form-control" accept="image/*" multiple style="border-radius:12px">
                     </div>
                 </div>
             </div>
@@ -353,22 +361,46 @@ async function saveCourt() {
 }
 
 // ─── EDITAR CANCHA ───────────────────────────────────────────────
-function openEditCourt(id, name, sport, price, slot, features) {
+function openEditCourt(id, name, sport, price, slot, features, imagePaths, imageUrls) {
     document.getElementById('e_court_id').value  = id;
     document.getElementById('e_name').value      = name;
     document.getElementById('e_sport').value     = sport;
     document.getElementById('e_price').value     = price;
     document.getElementById('e_slot').value      = slot;
     document.getElementById('e_features').value  = features;
+    document.getElementById('e_images_new').value = '';
+
+    // Render existing images
+    const list  = document.getElementById('e_images_list');
+    const paths = imagePaths ? imagePaths.split('||').filter(Boolean) : [];
+    const urls  = imageUrls  ? imageUrls.split('||').filter(Boolean)  : [];
+
+    list.innerHTML = paths.map((path, i) => `
+        <div class="position-relative" style="width:72px;height:72px">
+            <img src="${urls[i]}" style="width:72px;height:72px;object-fit:cover;border-radius:10px;border:1.5px solid #f0f0f0">
+            <button type="button" onclick="removeCourtImage('${id}','${path}',this.parentElement)"
+                style="position:absolute;top:-6px;right:-6px;background:#e53935;color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:11px;display:flex;align-items:center;justify-content:center;cursor:pointer;line-height:1">
+                ✕
+            </button>
+        </div>`).join('') || '<span class="text-muted" style="font-size:12px">Sin fotos.</span>';
+
     editCourtModal.show();
+}
+
+async function removeCourtImage(courtId, path, el) {
+    try {
+        await axios.delete(`/owner/canchas/${courtId}/imagenes`, { data: { path } });
+        el.remove();
+        Toast.fire({ icon: 'success', title: 'Foto eliminada.' });
+    } catch(e) {
+        Toast.fire({ icon: 'error', title: 'Error al eliminar.' });
+    }
 }
 
 async function updateCourt() {
     const btn = document.getElementById('btnUpdateCourt');
     const id  = document.getElementById('e_court_id').value;
-
-    const features = document.getElementById('e_features').value
-        .split(',').map(s => s.trim()).filter(Boolean);
+    const features = document.getElementById('e_features').value.split(',').map(s => s.trim()).filter(Boolean);
 
     btn.disabled = true;
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i>Guardando...';
@@ -381,6 +413,15 @@ async function updateCourt() {
             slot_duration:  document.getElementById('e_slot').value,
             features,
         });
+
+        // Upload new images if any
+        const files = document.getElementById('e_images_new').files;
+        if (files.length) {
+            const fd = new FormData();
+            for (let i = 0; i < files.length; i++) fd.append('images[]', files[i]);
+            await axios.post(`/owner/canchas/${id}/imagenes`, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+        }
+
         Toast.fire({ icon: 'success', title: 'Cancha actualizada.' });
         setTimeout(() => location.reload(), 1200);
     } catch(e) {

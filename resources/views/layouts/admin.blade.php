@@ -62,6 +62,12 @@
         <a href="{{ route('admin.subscriptions.index') }}" class="nav-link-item {{ request()->routeIs('admin.subscriptions.*') ? 'active' : '' }}">
             <i class="fa-solid fa-crown"></i> Suscripciones
         </a>
+        <a href="{{ route('admin.services.index') }}" class="nav-link-item {{ request()->routeIs('admin.services.*') ? 'active' : '' }}">
+            <i class="fa-solid fa-concierge-bell"></i> Servicios
+        </a>
+        <a href="{{ route('admin.promotions.index') }}" class="nav-link-item {{ request()->routeIs('admin.promotions.*') ? 'active' : '' }}">
+            <i class="fa-solid fa-tag"></i> Promociones
+        </a>
         <a href="{{ route('admin.logs.index') }}" class="nav-link-item {{ request()->routeIs('admin.logs.*') ? 'active' : '' }}">
             <i class="fa-solid fa-terminal"></i> Logs del sistema
         </a>

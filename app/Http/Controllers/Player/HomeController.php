@@ -3,8 +3,7 @@
 namespace App\Http\Controllers\Player;
 
 use App\Http\Controllers\Controller;
-use App\Models\Venue;
-use App\Models\Court;
+use App\Models\{Venue, Court};
 use Illuminate\Http\Request;
 
 class HomeController extends Controller
@@ -72,7 +71,23 @@ class HomeController extends Controller
         $venue = Venue::active()->where('slug', $venueSlug)->firstOrFail();
         $court = $venue->activeCourts()->findOrFail($courtId);
 
-        return view('pages.player.explore.court', compact('venue', 'court'));
+        // Active promotions for this court
+        $today = now()->toDateString();
+        $promotions = \App\Models\Promotion::where('venue_id', $venue->id)
+            ->where('active', true)
+            ->where('starts_at', '<=', $today)
+            ->where('ends_at', '>=', $today)
+            ->get()
+            ->filter(fn($p) => $p->appliesToCourt($court->id))
+            ->values();
+
+        // Active extra services for this venue
+        $extraServices = \App\Models\ExtraService::where('venue_id', $venue->id)
+            ->where('active', true)
+            ->orderBy('name')
+            ->get();
+
+        return view('pages.player.explore.court', compact('venue', 'court', 'promotions', 'extraServices'));
     }
 
     // AJAX: get slots for a date

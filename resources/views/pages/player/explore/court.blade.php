@@ -55,6 +55,55 @@
             </div>
         </div>
 
+        {{-- Active promotions --}}
+        @if($promotions->count())
+        <div class="mb-4">
+            <label class="fw-700 mb-2" style="font-size:14px">🏷 Promociones activas</label>
+            @foreach($promotions as $promo)
+            <div class="d-flex align-items-center justify-content-between p-3 rounded-3 mb-2"
+                 style="background:#fff8e1;border:1.5px solid #ffe082">
+                <div>
+                    <div class="fw-700" style="font-size:13px">{{ $promo->name }}</div>
+                    @if($promo->description)
+                        <div class="text-muted" style="font-size:12px">{{ $promo->description }}</div>
+                    @endif
+                    <div style="font-size:11px;color:#888">Válida hasta {{ $promo->ends_at->format('d/m/Y') }}</div>
+                </div>
+                <span class="fw-800" style="font-size:15px;color:#e65100;white-space:nowrap;margin-left:12px">{{ $promo->display_label }}</span>
+            </div>
+            @endforeach
+        </div>
+        @endif
+
+        {{-- Extra services --}}
+        @if($extraServices->count())
+        <div class="mb-4">
+            <label class="fw-700 mb-2" style="font-size:14px">🛎 Servicios adicionales</label>
+            <div id="extraServicesContainer" class="d-flex flex-column gap-2">
+                @foreach($extraServices as $svc)
+                <div class="d-flex align-items-center justify-content-between p-3 rounded-3" style="border:1.5px solid #f0f0f0">
+                    <div>
+                        <div class="fw-600" style="font-size:13px">{{ $svc->name }}</div>
+                        @if($svc->description)
+                            <div class="text-muted" style="font-size:12px">{{ $svc->description }}</div>
+                        @endif
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="fw-700" style="font-size:13px">₡{{ number_format($svc->price,0,',','.') }}</span>
+                        <div class="d-flex align-items-center gap-1">
+                            <button type="button" class="btn btn-sm" style="border:1.5px solid #e0e0e0;border-radius:8px;width:28px;height:28px;padding:0;display:flex;align-items:center;justify-content:center"
+                                    onclick="adjustQty('{{ $svc->id }}', -1)">–</button>
+                            <span id="qty_{{ $svc->id }}" style="min-width:24px;text-align:center;font-weight:700;font-size:13px">0</span>
+                            <button type="button" class="btn btn-sm" style="border:1.5px solid #e0e0e0;border-radius:8px;width:28px;height:28px;padding:0;display:flex;align-items:center;justify-content:center"
+                                    onclick="adjustQty('{{ $svc->id }}', 1)">+</button>
+                        </div>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+        </div>
+        @endif
+
         {{-- Reserve button --}}
         <div id="reserveSection" class="d-none">
             <div class="bg-white rounded-4 p-4 shadow-sm mb-4" style="border:1.5px solid #f0f0f0">
@@ -67,6 +116,17 @@
                 <div class="d-flex justify-content-between text-muted mb-1" style="font-size:13px">
                     <span>Horario:</span><span id="summaryTime" class="fw-600 text-dark"></span>
                 </div>
+                <div class="d-flex justify-content-between text-muted mb-1" style="font-size:13px">
+                    <span>Subtotal:</span><span id="summaryBasePrice" class="fw-600 text-dark"></span>
+                </div>
+                <div id="summaryDiscountRow" class="d-none d-flex justify-content-between text-muted mb-1" style="font-size:13px">
+                    <span id="summaryDiscountLabel" style="color:#e65100">Descuento:</span>
+                    <span id="summaryDiscount" class="fw-600" style="color:#e65100"></span>
+                </div>
+                <div id="summaryExtrasRow" class="d-none d-flex justify-content-between text-muted mb-1" style="font-size:13px">
+                    <span>Extras:</span><span id="summaryExtras" class="fw-600 text-dark"></span>
+                </div>
+                <hr style="margin:8px 0;border-color:#f0f0f0">
                 <div class="d-flex justify-content-between text-muted" style="font-size:13px">
                     <span>Total:</span><span id="summaryPrice" class="fw-700 text-dark" style="font-size:16px"></span>
                 </div>
@@ -82,11 +142,62 @@
 
 @push('scripts')
 <script>
-const COURT_ID = '{{ $court->id }}';
-const SLOTS_URL = '{{ route("player.slots", $court->id) }}';
+const COURT_ID   = '{{ $court->id }}';
+const SLOTS_URL  = '{{ route("player.slots", $court->id) }}';
 const RESERVE_URL = '{{ route("player.bookings.store") }}';
 
+const PROMOTIONS = @json($promotions);
+const EXTRA_SERVICES = @json($extraServices);
+const extraPrices = {};
+EXTRA_SERVICES.forEach(s => extraPrices[s.id] = parseFloat(s.price));
+
 let selectedSlot = null;
+let activePromoId = null;
+let discountAmount = 0;
+
+function adjustQty(id, delta) {
+    const el = document.getElementById('qty_' + id);
+    if (!el) return;
+    const cur = parseInt(el.textContent) || 0;
+    const next = Math.max(0, cur + delta);
+    el.textContent = next;
+    updateSummaryTotals();
+}
+
+function getExtrasTotal() {
+    let total = 0;
+    EXTRA_SERVICES.forEach(s => {
+        const qty = parseInt(document.getElementById('qty_' + s.id)?.textContent || 0);
+        total += s.price * qty;
+    });
+    return total;
+}
+
+function updateSummaryTotals() {
+    if (!selectedSlot) return;
+    const base   = selectedSlot.price;
+    const extras = getExtrasTotal();
+    const total  = base - discountAmount + extras;
+
+    document.getElementById('summaryBasePrice').textContent = '₡' + Number(base).toLocaleString('es-CR',{maximumFractionDigits:0});
+    document.getElementById('summaryPrice').textContent     = '₡' + Number(total).toLocaleString('es-CR',{maximumFractionDigits:0});
+
+    const discRow = document.getElementById('summaryDiscountRow');
+    if (discountAmount > 0) {
+        discRow.classList.remove('d-none');
+        document.getElementById('summaryDiscount').textContent = '-₡' + Number(discountAmount).toLocaleString('es-CR',{maximumFractionDigits:0});
+    } else {
+        discRow.classList.add('d-none');
+    }
+
+    const extRow = document.getElementById('summaryExtrasRow');
+    if (extras > 0) {
+        extRow.classList.remove('d-none');
+        document.getElementById('summaryExtras').textContent = '₡' + Number(extras).toLocaleString('es-CR',{maximumFractionDigits:0});
+    } else {
+        extRow.classList.add('d-none');
+    }
+}
 
 document.getElementById('dateInput').addEventListener('change', loadSlots);
 
@@ -128,11 +239,27 @@ function selectSlot(btn, slot, date) {
     btn.classList.add('selected');
     selectedSlot = { ...slot, date };
 
+    // Find best applicable promo
+    activePromoId = null;
+    discountAmount = 0;
+    const applicable = PROMOTIONS.filter(p => !p.court_ids || p.court_ids.includes(COURT_ID));
+    if (applicable.length) {
+        const best = applicable.reduce((a, b) => {
+            const da = a.type==='percentage' ? slot.price*(a.value/100) : Math.min(a.value, slot.price);
+            const db = b.type==='percentage' ? slot.price*(b.value/100) : Math.min(b.value, slot.price);
+            return da > db ? a : b;
+        });
+        discountAmount = best.type==='percentage'
+            ? Math.round(slot.price * (best.value/100) * 100) / 100
+            : Math.min(parseFloat(best.value), slot.price);
+        activePromoId = best.id;
+    }
+
     document.getElementById('summaryDate').textContent = new Date(date + 'T00:00:00').toLocaleDateString('es-CR', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
-    document.getElementById('summaryTime').textContent = slot.start + ' - ' + slot.end;
-    document.getElementById('summaryPrice').textContent = '₡' + Number(slot.price).toLocaleString('es-CR', { maximumFractionDigits: 0 });
+    document.getElementById('summaryTime').textContent = slot.start + ' – ' + slot.end;
     document.getElementById('reserveSection').classList.remove('d-none');
     document.getElementById('reserveSection').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    updateSummaryTotals();
 }
 
 document.getElementById('btnReserve').addEventListener('click', async () => {
@@ -150,12 +277,21 @@ document.getElementById('btnReserve').addEventListener('click', async () => {
     if (!isConfirmed) return;
 
     try {
+        // Build extra services array
+        const extraServices = [];
+        EXTRA_SERVICES.forEach(s => {
+            const qty = parseInt(document.getElementById('qty_' + s.id)?.textContent || 0);
+            if (qty > 0) extraServices.push({ id: s.id, quantity: qty });
+        });
+
         const res = await axios.post(RESERVE_URL, {
-            court_id: COURT_ID,
+            court_id:         COURT_ID,
             reservation_date: selectedSlot.date,
-            start_time: selectedSlot.start,
-            end_time: selectedSlot.end,
-            notes: document.getElementById('reserveNotes').value,
+            start_time:       selectedSlot.start,
+            end_time:         selectedSlot.end,
+            notes:            document.getElementById('reserveNotes').value,
+            promotion_id:     activePromoId,
+            extra_services:   extraServices.length ? extraServices : null,
         });
 
         await Swal.fire({

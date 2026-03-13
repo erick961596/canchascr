@@ -69,6 +69,16 @@ class Venue extends Model
     public function scopeByCanton($q, $c)     { return $q->where('canton', $c); }
     public function scopeByDistrict($q, $d)   { return $q->where('district', $d); }
 
+    public function extraServices()
+    {
+        return $this->hasMany(\App\Models\ExtraService::class);
+    }
+
+    public function promotions()
+    {
+        return $this->hasMany(\App\Models\Promotion::class);
+    }
+
     public function ratings()
     {
         return $this->hasMany(VenueRating::class);

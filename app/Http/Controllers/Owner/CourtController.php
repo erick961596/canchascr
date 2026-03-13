@@ -43,10 +43,7 @@ class CourtController extends Controller
 
         $court = Court::create(array_merge($data, ['images' => $images]));
 
-        return response()->json([
-            'message' => 'Cancha creada exitosamente.',
-            'court'   => $court->load('venue'),
-        ]);
+        return response()->json(['message' => 'Cancha creada exitosamente.', 'court' => $court->load('venue')]);
     }
 
     public function update(Request $request, Court $court)
@@ -63,8 +60,50 @@ class CourtController extends Controller
         ]);
 
         $court->update($data);
-
         return response()->json(['message' => 'Cancha actualizada.', 'court' => $court]);
+    }
+
+    // -----------------------------------------------------------------------
+    // Subir imágenes adicionales
+    // -----------------------------------------------------------------------
+    public function addImages(Request $request, Court $court)
+    {
+        $this->authorizeOwner($court);
+
+        $request->validate(['images.*' => 'required|image|max:5120']);
+
+        $existing = array_filter($court->images ?? [], fn($p) => !empty($p));
+        $new = [];
+
+        foreach ($request->file('images') as $img) {
+            $path = $img->store('courts/images/' . $court->venue_id, 's3');
+            if ($path) $new[] = $path;
+        }
+
+        $court->update(['images' => array_values(array_merge($existing, $new))]);
+
+        return response()->json([
+            'message' => 'Fotos agregadas.',
+            'images'  => $court->fresh()->images_urls,
+        ]);
+    }
+
+    // -----------------------------------------------------------------------
+    // Eliminar imagen individual
+    // -----------------------------------------------------------------------
+    public function removeImage(Request $request, Court $court)
+    {
+        $this->authorizeOwner($court);
+        $request->validate(['path' => 'required|string']);
+
+        $path = $request->input('path');
+        $images = array_values(array_filter($court->images ?? [], fn($p) => $p !== $path));
+        $court->update(['images' => $images]);
+
+        // Borrar del S3
+        Storage::disk('s3')->delete($path);
+
+        return response()->json(['message' => 'Foto eliminada.', 'images' => $court->fresh()->images_urls]);
     }
 
     public function destroy(Court $court)
@@ -75,7 +114,7 @@ class CourtController extends Controller
     }
 
     // -----------------------------------------------------------------------
-    // Horarios — GET (para cargar en modal)
+    // Horarios
     // -----------------------------------------------------------------------
     public function getSchedules(Court $court)
     {
@@ -83,9 +122,6 @@ class CourtController extends Controller
         return response()->json($court->schedules);
     }
 
-    // -----------------------------------------------------------------------
-    // Horarios — POST (guardar / actualizar)
-    // -----------------------------------------------------------------------
     public function saveSchedules(Request $request, Court $court)
     {
         $this->authorizeOwner($court);
@@ -118,19 +154,14 @@ class CourtController extends Controller
     }
 
     // -----------------------------------------------------------------------
-    // Bloqueos — GET
+    // Bloqueos
     // -----------------------------------------------------------------------
     public function getBlockouts(Court $court)
     {
         $this->authorizeOwner($court);
-        return response()->json(
-            $court->blockouts()->orderBy('block_date')->get()
-        );
+        return response()->json($court->blockouts()->orderBy('block_date')->get());
     }
 
-    // -----------------------------------------------------------------------
-    // Bloqueos — POST
-    // -----------------------------------------------------------------------
     public function addBlockout(Request $request, Court $court)
     {
         $this->authorizeOwner($court);
@@ -144,13 +175,9 @@ class CourtController extends Controller
         ]);
 
         $blockout = Blockout::create(array_merge($data, ['court_id' => $court->id]));
-
         return response()->json(['message' => 'Bloqueo agregado.', 'blockout' => $blockout]);
     }
 
-    // -----------------------------------------------------------------------
-    // Bloqueos — DELETE
-    // -----------------------------------------------------------------------
     public function removeBlockout(Blockout $blockout)
     {
         $this->authorizeOwner($blockout->court);

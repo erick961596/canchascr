@@ -55,6 +55,14 @@ class Court extends Model
         );
     }
 
+    /**
+     * Returns raw S3 paths (for the edit modal to know which path to delete)
+     */
+    public function getImagePathsAttribute(): array
+    {
+        return array_values(array_filter($this->images ?? [], fn($p) => !empty($p)));
+    }
+
     public function scopeActive($q) { return $q->where('active', true); }
     public function scopeBySport($q, $s) { return $q->where('sport', $s); }
 

@@ -134,6 +134,12 @@
         <a href="{{ route('owner.reservations.index') }}" class="nav-link-item {{ request()->routeIs('owner.reservations.*') ? 'active' : '' }}">
             <i class="fa-solid fa-calendar-check"></i> Reservas
         </a>
+        <a href="{{ route('owner.services.index') }}" class="nav-link-item {{ request()->routeIs('owner.services.*') ? 'active' : '' }}">
+            <i class="fa-solid fa-concierge-bell"></i> Servicios
+        </a>
+        <a href="{{ route('owner.promotions.index') }}" class="nav-link-item {{ request()->routeIs('owner.promotions.*') ? 'active' : '' }}">
+            <i class="fa-solid fa-tag"></i> Promociones
+        </a>
 
         <div class="sidebar-label">Cuenta</div>
         <a href="{{ route('owner.subscription.index') }}" class="nav-link-item {{ request()->routeIs('owner.subscription.*') ? 'active' : '' }}">
