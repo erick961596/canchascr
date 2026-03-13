@@ -1,0 +1,666 @@
+{
+    "San Jos\u00e9": {
+        "Central": [
+            "Carmen",
+            "Merced",
+            "Hospital",
+            "Catedral",
+            "Zapote",
+            "San Francisco De Dos Rios",
+            "Uruca",
+            "Mata Redonda",
+            "Pavas",
+            "Hatillo",
+            "San Sebasti\u00e1n"
+        ],
+        "Escaz\u00fa": [
+            "Escaz\u00fa",
+            "San Antonio",
+            "San Rafael"
+        ],
+        "Desamparados": [
+            "Desamparados",
+            "San Miguel",
+            "San Juan De Dios",
+            "San Rafael Arriba",
+            "San Rafael Abajo",
+            "San Antonio",
+            "Frailes",
+            "Patarra",
+            "San Cristobal",
+            "Rosario",
+            "Damas",
+            "Gravilias",
+            "Los Guido"
+        ],
+        "Puriscal": [
+            "Santiago",
+            "Mercedes Sur",
+            "Barbacoas",
+            "Grifo Alto",
+            "San Rafael",
+            "Candelarita",
+            "Desamparaditos",
+            "San Antonio",
+            "Chires"
+        ],
+        "Tarraz\u00fa": [
+            "San Marcos",
+            "San Lorenzo",
+            "San Carlos"
+        ],
+        "Aserr\u00ed": [
+            "Aserr\u00ed",
+            "Tarbaca",
+            "Vuelta De Jorco",
+            "San Gabriel",
+            "Legua",
+            "Monterrey",
+            "Salitrillos"
+        ],
+        "Mora": [
+            "Col\u00f3n",
+            "Guayabo",
+            "Tabarcia",
+            "Piedras Negras",
+            "Picagres",
+            "Jaris"
+        ],
+        "Goicoechea": [
+            "Guadalupe",
+            "San Francisco",
+            "Calle Blancos",
+            "Mata De Platano",
+            "Ip\u00eds",
+            "Rancho Redondo",
+            "Purral"
+        ],
+        "Santa Ana": [
+            "Santa Ana",
+            "Salitral",
+            "Pozos",
+            "Uruca",
+            "Piedades",
+            "Brasil"
+        ],
+        "Alajuelita": [
+            "Alajuelita",
+            "San Josecito",
+            "San Antonio",
+            "Concepci\u00f3n",
+            "San Felipe"
+        ],
+        "V\u00e1zquez De Coronado": [
+            "San Isidro",
+            "San Rafael",
+            "Dulce Nombre De Jesus",
+            "Patalillo",
+            "Cascajal"
+        ],
+        "Acosta": [
+            "San Ignacio",
+            "Guaitil",
+            "Palmichal",
+            "Cangrejal",
+            "Sabanillas"
+        ],
+        "Tib\u00e1s": [
+            "San Juan",
+            "Cinco Esquinas",
+            "Anselmo Llorente",
+            "Leon Xiii",
+            "Colima"
+        ],
+        "Moravia": [
+            "San Vicente",
+            "San Jeronimo",
+            "La Trinidad"
+        ],
+        "Montes De Oca": [
+            "San Pedro",
+            "Sabanilla",
+            "Mercedes",
+            "San Rafael"
+        ],
+        "Turrubares": [
+            "San Pablo",
+            "San Pedro",
+            "San Juan De Mata",
+            "San Luis",
+            "Carara"
+        ],
+        "Dota": [
+            "Santa Mar\u00eda",
+            "Jardin",
+            "Copey"
+        ],
+        "Curridabat": [
+            "Curridabat",
+            "Granadilla",
+            "Sanchez",
+            "Tirrases"
+        ],
+        "P\u00e9rez Zeled\u00f3n": [
+            "San Isidro De El General",
+            "El General",
+            "Daniel Flores",
+            "Rivas",
+            "San Pedro",
+            "Platanares",
+            "Pejibaye",
+            "Cajon",
+            "Baru",
+            "Rio Nuevo",
+            "P\u00e1ramo"
+        ],
+        "Le\u00f3n Cort\u00e9s Castro": [
+            "San Pablo",
+            "San Andres",
+            "Llano Bonito",
+            "San Isidro",
+            "Santa Cruz",
+            "San Antonio"
+        ]
+    },
+    "Alajuela": {
+        "Central": [
+            "Alajuela",
+            "San Jos\u00e9",
+            "Carrizal",
+            "San Antonio",
+            "Gu\u00e1cima",
+            "San Isidro",
+            "Sabanilla",
+            "San Rafael",
+            "Rio Segundo",
+            "Desamparados",
+            "Turrucares",
+            "Tambor",
+            "Garita",
+            "Sarapiqu\u00ed"
+        ],
+        "San Ram\u00f3n": [
+            "San Ram\u00f3n",
+            "Santiago",
+            "San Juan",
+            "Piedades Norte",
+            "Piedades Sur",
+            "San Rafael",
+            "San Isidro",
+            "Angeles",
+            "Alfaro",
+            "Volio",
+            "Concepci\u00f3n",
+            "Zapotal",
+            "Pe\u00f1as Blancas",
+            "San Lorenzo"
+        ],
+        "Grecia": [
+            "Grecia",
+            "San Isidro",
+            "San Jos\u00e9",
+            "San Roque",
+            "Tacares",
+            "Rio Cuarto",
+            "Puente De Piedra",
+            "Bolivar"
+        ],
+        "San Mateo": [
+            "San Mateo",
+            "Desmonte",
+            "Jes\u00fas Mar\u00eda",
+            "Labrador"
+        ],
+        "Atenas": [
+            "Atenas",
+            "Jes\u00fas",
+            "Mercedes",
+            "San Isidro",
+            "Concepci\u00f3n",
+            "San Jos\u00e9",
+            "Santa Eulalia",
+            "Escobal"
+        ],
+        "Naranjo": [
+            "Naranjo",
+            "San Juan",
+            "San Miguel",
+            "Palmitos",
+            "El Rosario",
+            "San Jos\u00e9",
+            "Cirr\u00ed Sur",
+            "San Jer\u00f3nimo"
+        ],
+        "Palmares": [
+            "Palmares",
+            "Zaragoza",
+            "Buenos Aires",
+            "Santiago",
+            "Candelaria",
+            "Esquipulas",
+            "La Granja"
+        ],
+        "Po\u00e1s": [
+            "San Pedro",
+            "San Juan",
+            "San Rafael",
+            "Carrillos",
+            "Sabana Redonda"
+        ],
+        "Orotina": [
+            "Orotina",
+            "El Mastate",
+            "Hacienda Vieja",
+            "Coyolar",
+            "La Ceiba"
+        ],
+        "San Carlos": [
+            "Quesada",
+            "Florencia",
+            "Buenavista",
+            "Aguas Zarcas",
+            "Venecia",
+            "Pital",
+            "La Fortuna",
+            "La Tigra",
+            "La Palmera",
+            "Venado",
+            "Cutris",
+            "Monterrey",
+            "Pocosol"
+        ],
+        "Zarcero": [
+            "Zarcero",
+            "Laguna",
+            "Tapesco",
+            "Guadalupe",
+            "Palmira",
+            "Zapote",
+            "Brisas"
+        ],
+        "Sarch\u00ed": [
+            "Sarch\u00ed Norte",
+            "Sarch\u00ed Sur",
+            "Toro Amarillo",
+            "San Pedro",
+            "Rodriguez"
+        ],
+        "Upala": [
+            "Upala",
+            "Aguas Claras",
+            "San Jos\u00e9 o Pizote",
+            "Bijagua",
+            "Delicias",
+            "Dos Rios",
+            "Yolillal",
+            "Canalete"
+        ],
+        "Los Chiles": [
+            "Los Chiles",
+            "Ca\u00f1o Negro",
+            "El Amparo",
+            "San Jorge"
+        ],
+        "Guatuso": [
+            "San Rafael",
+            "Buenavista",
+            "Cote",
+            "Katira"
+        ],
+        "R\u00edo Cuarto": [
+            "R\u00edo Cuarto",
+            "Santa Rita",
+            "Santa Isabel"
+        ]
+    },
+    "Cartago": {
+        "Central": [
+            "Oriental",
+            "Occidental",
+            "Carmen",
+            "San Nicol\u00e1s",
+            "Aguacaliente o San Francisco",
+            "Guadalupe o Arenilla",
+            "Corralillo",
+            "Tierra Blanca",
+            "Dulce Nombre",
+            "Llano Grande",
+            "Quebradilla"
+        ],
+        "Para\u00edso": [
+            "Paraiso",
+            "Santiago",
+            "Orosi",
+            "Cach\u00ed",
+            "Llanos de Santa Luc\u00eda"
+        ],
+        "La Uni\u00f3n": [
+            "Tres Rios",
+            "San Diego",
+            "San Juan",
+            "San Rafael",
+            "Concepci\u00f3n",
+            "Dulce Nombre",
+            "San Ram\u00f3n",
+            "Rio Azul"
+        ],
+        "Jim\u00e9nez": [
+            "Juan Vi\u00f1as",
+            "Tucurrique",
+            "Pejibaye"
+        ],
+        "Turrialba": [
+            "Turrialba",
+            "La Suiza",
+            "Peralta",
+            "Santa Cruz",
+            "Santa Teresita",
+            "Pavones",
+            "Tuis",
+            "Tayutic",
+            "Santa Rosa",
+            "Tres Equis",
+            "La Isabel",
+            "Chirrip\u00f3"
+        ],
+        "Alvarado": [
+            "Pacayas",
+            "Cervantes",
+            "Capellades"
+        ],
+        "Oreamuno": [
+            "San Rafael",
+            "Cot",
+            "Potrero Cerrado",
+            "Cipreses",
+            "Santa Rosa"
+        ],
+        "El Guarco": [
+            "El Tejar",
+            "San Isidro",
+            "Tobosi",
+            "Patio De Agua"
+        ]
+    },
+    "Heredia": {
+        "Central": [
+            "Heredia",
+            "Mercedes",
+            "San Francisco",
+            "Ulloa",
+            "Varablanca"
+        ],
+        "Barva": [
+            "Barva",
+            "San Pedro",
+            "San Pablo",
+            "San Roque",
+            "Santa Luc\u00eda",
+            "San Jos\u00e9 de la Monta\u00f1a"
+        ],
+        "Santo Domingo": [
+            "Santo Domingo",
+            "San Vicente",
+            "San Miguel",
+            "Paracito",
+            "Santo Tom\u00e1s",
+            "Santa Rosa",
+            "Tures",
+            "Para"
+        ],
+        "Santa Barbara": [
+            "Santa B\u00e1rbara",
+            "San Pedro",
+            "San Juan",
+            "Jes\u00fas",
+            "Santo Domingo",
+            "Puraba"
+        ],
+        "San Rafael": [
+            "San Rafael",
+            "San Josecito",
+            "Santiago",
+            "Los \u00c1ngeles",
+            "Concepci\u00f3n"
+        ],
+        "San Isidro": [
+            "San Isidro",
+            "San Jos\u00e9",
+            "Concepci\u00f3n",
+            "San Francisco"
+        ],
+        "Bel\u00e9n": [
+            "San Antonio",
+            "La Ribera",
+            "La Asuncion"
+        ],
+        "Flores": [
+            "San Joaqu\u00edn",
+            "Barrantes",
+            "Llorente"
+        ],
+        "San Pablo": [
+            "San Pablo",
+            "Rincon De Sabanilla"
+        ],
+        "Sarapiqu\u00ed": [
+            "Puerto Viejo",
+            "La Virgen",
+            "Las Horquetas",
+            "Llanuras Del Gaspar",
+            "Cure\u00f1a"
+        ]
+    },
+    "Guanacaste": {
+        "Liberia": [
+            "Liberia",
+            "Nacascolo",
+            "Ca\u00f1as Dulces",
+            "Mayorga",
+            "Curubande"
+        ],
+        "Nicoya": [
+            "Nicoya",
+            "Mansi\u00f3n",
+            "San Antonio",
+            "Quebrada Honda",
+            "S\u00e1mara",
+            "Nosara",
+            "Bel\u00e9n De Nosarita"
+        ],
+        "Santa Cruz": [
+            "Santa Cruz",
+            "Bolson",
+            "Veintisiete de Abril",
+            "Tempate",
+            "Cartagena",
+            "Cuajiniquil",
+            "Diria",
+            "Cabo Velas",
+            "Tamarindo"
+        ],
+        "Bagaces": [
+            "Bagaces",
+            "La Fortuna",
+            "Mogote",
+            "Rio Naranjo"
+        ],
+        "Carrillo": [
+            "Filadelfia",
+            "Palmira",
+            "Sardinal",
+            "Belen"
+        ],
+        "Ca\u00f1as": [
+            "Ca\u00f1as",
+            "Palmira",
+            "San Miguel",
+            "Bebedero",
+            "Porozal"
+        ],
+        "Abangares": [
+            "Las Juntas",
+            "Sierra",
+            "San Juan",
+            "Colorado"
+        ],
+        "Tilar\u00e1n": [
+            "Tilar\u00e1n",
+            "Quebrada Grande",
+            "Tronadora",
+            "Santa Rosa",
+            "L\u00edbano",
+            "Tierras Morenas",
+            "Arenal",
+            "Cabeceras"
+        ],
+        "Nandayure": [
+            "Carmona",
+            "Santa Rita",
+            "Zapotal",
+            "San Pablo",
+            "Porvenir",
+            "Bejuco"
+        ],
+        "La Cruz": [
+            "La Cruz",
+            "Santa Cecilia",
+            "La Garita",
+            "Santa Elena"
+        ],
+        "Hojancha": [
+            "Hojancha",
+            "Monte Romo",
+            "Puerto Carrillo",
+            "Huacas"
+        ]
+    },
+    "Puntarenas": {
+        "Central": [
+            "Puntarenas",
+            "Pitahaya",
+            "Chomes",
+            "Lepanto",
+            "Paquera",
+            "Manzanillo",
+            "Guacimal",
+            "Barranca",
+            "Isla Del Coco",
+            "C\u00f3bano",
+            "Chacarita",
+            "Chira",
+            "Acapulco",
+            "El Roble",
+            "Arancibia"
+        ],
+        "Esparza": [
+            "Esp\u00edritu Santo",
+            "San Juan Grande",
+            "Macacona",
+            "San Rafael",
+            "San Jer\u00f3nimo",
+            "Caldera"
+        ],
+        "Buenos Aires": [
+            "Buenos Aires",
+            "Volc\u00e1n",
+            "Potrero Grande",
+            "Boruca",
+            "Pilas",
+            "Colinas",
+            "Changuena",
+            "Biolley",
+            "Brunka"
+        ],
+        "Montes De Oro": [
+            "Miramar",
+            "La Uni\u00f3n",
+            "San Isidro"
+        ],
+        "Osa": [
+            "Puerto Cort\u00e9s",
+            "Palmar",
+            "Sierpe",
+            "Bah\u00eda Ballena",
+            "Piedras Blancas",
+            "Bah\u00eda Drake"
+        ],
+        "Quepos": [
+            "Quepos",
+            "Savegre",
+            "Naranjito"
+        ],
+        "Golfito": [
+            "Golfito",
+            "Puerto Jim\u00e9nez",
+            "Guaycara",
+            "Pav\u00f3n"
+        ],
+        "Coto Brus": [
+            "San Vito",
+            "Sabalito",
+            "Aguabuena",
+            "Limoncito",
+            "Pittier"
+        ],
+        "Parrita": [
+            "Parrita"
+        ],
+        "Corredores": [
+            "Corredor",
+            "La Cuesta",
+            "Canoas",
+            "Laurel"
+        ],
+        "Garabito": [
+            "Jac\u00f3",
+            "T\u00e1rcoles"
+        ],
+        "Monte Verde": [
+            "Monte Verde"
+        ]
+    },
+    "Lim\u00f3n": {
+        "Central": [
+            "Lim\u00f3n",
+            "Valle La Estrella",
+            "Rio Blanco",
+            "Matama"
+        ],
+        "Pococ\u00ed": [
+            "Guapiles",
+            "Jim\u00e9nez",
+            "Rita",
+            "Roxana",
+            "Cariari",
+            "Colorado",
+            "La Colonia"
+        ],
+        "Siquirres": [
+            "Siquirres",
+            "Pacuarito",
+            "Florida",
+            "Germania",
+            "El Cairo",
+            "Alegr\u00eda"
+        ],
+        "Talamanca": [
+            "Bratsi",
+            "Sixaola",
+            "Cahuita",
+            "Telire"
+        ],
+        "Matina": [
+            "Matina",
+            "Bat\u00e1n",
+            "Carrandi"
+        ],
+        "Gu\u00e1cimo": [
+            "Gu\u00e1cimo",
+            "Mercedes",
+            "Pocora",
+            "Rio Jim\u00e9nez",
+            "Duacari"
+        ]
+    }
+}
