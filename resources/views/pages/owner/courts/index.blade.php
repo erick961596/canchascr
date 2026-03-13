@@ -289,7 +289,7 @@ async function saveSchedules() {
         Toast.fire({ icon: 'success', title: 'Horarios guardados.' });
         schedulesModal.hide();
     } catch(e) {
-        Toast.fire({ icon: 'error', title: 'Error guardando horarios.' });
+        Toast.fire({ icon: 'error', title: e.response?.data?.message || e.response?.data?.errors ? Object.values(e.response.data.errors)[0][0] : 'Error guardando horarios.' });
     }
 }
 

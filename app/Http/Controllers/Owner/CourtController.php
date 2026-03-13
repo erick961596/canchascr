@@ -81,17 +81,27 @@ class CourtController extends Controller
         $this->authorizeOwner($court);
 
         $data = $request->validate([
-            'schedules'              => 'required|array',
+            'schedules'               => 'required|array|min:1',
             'schedules.*.day_of_week' => 'required|in:mon,tue,wed,thu,fri,sat,sun',
-            'schedules.*.open_time'  => 'required|date_format:H:i',
-            'schedules.*.close_time' => 'required|date_format:H:i|after:schedules.*.open_time',
-            'schedules.*.active'     => 'boolean',
+            'schedules.*.open_time'   => 'required|date_format:H:i,H:i:s',
+            'schedules.*.close_time'  => 'required|date_format:H:i,H:i:s',
+            'schedules.*.active'      => 'boolean',
         ]);
 
         foreach ($data['schedules'] as $s) {
+            // Normalizar a H:i (quitar segundos si vienen)
+            $open  = substr($s['open_time'],  0, 5);
+            $close = substr($s['close_time'], 0, 5);
+
+            if ($close <= $open) {
+                return response()->json([
+                    'message' => "El horario de cierre debe ser posterior al de apertura ({$s['day_of_week']})."
+                ], 422);
+            }
+
             Schedule::updateOrCreate(
                 ['court_id' => $court->id, 'day_of_week' => $s['day_of_week']],
-                ['open_time' => $s['open_time'], 'close_time' => $s['close_time'], 'active' => $s['active'] ?? true]
+                ['open_time' => $open, 'close_time' => $close, 'active' => $s['active'] ?? true]
             );
         }
 
